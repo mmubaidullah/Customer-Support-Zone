@@ -1,73 +1,50 @@
-
-import { useState, useEffect} from 'react'
-
+import { Suspense, useState} from 'react'
 import './App.css'
-import Footer from './components/footer/Footer'
-import Hero from './components/hero/Hero'
-import MainSection from './components/mainSection/MainSection'
-import Navbar from './components/navbar/Navbar'
-import { ToastContainer, toast } from 'react-toastify';
+import Issues from './assets/component/Customer/Issues'
+import Footer from './assets/component/footer/Footer'
+import Nav from './assets/component/nav/Nav'
+import Status from './assets/component/status/Status'
+import Task from './assets/component/task/Task'
+import { ToastContainer } from 'react-toastify'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { fas } from '@fortawesome/free-solid-svg-icons'
+import { far } from '@fortawesome/free-regular-svg-icons'
+import { fab } from '@fortawesome/free-brands-svg-icons'
 
 
+library.add(fas, far, fab)
 
-
-const fetchTicket = async () => {
-  const res = await fetch("/customerTicketsData.json");
-  return res.json()
+const fetchdata = async () =>{
+const url = 'public/data.json';
+const res = await fetch(url)
+return  res.json()
 }
 
-
+const fetchPromise = fetchdata();
 
 function App() {
-
-
-  const [tickets, setTickets] = useState([]); // All available tickets
-    // console.log(tickets)
-  const [tasks, setTasks] = useState([]);     // Selected tasks
-  const [resolvedTasks, setResolvedTasks] = useState([]); 
-
-
-  useEffect(() => {
-    fetchTicket().then((data) => setTickets(data));
-  }, []);
-
-
-  // function to add task
-  const onAddTask = (ticket) => {
-    setTasks((prev) => [...prev, ticket]);
-    toast(`Added "${ticket.title}" to Task Status!!`);
-    setTickets((prev) => prev.filter((t) => t.id !== ticket.id));
-
-  };
-  // Complete task (remove from tickets + tasks)
-  const onCompleteTask = (completedTask) => {
-    setTasks((prev) => prev.filter((t) => t.id !== completedTask.id));
-    // setTickets((prev) => prev.filter((t) => t.id !== completedTask.id));
-     setResolvedTasks((prev) => [...prev, completedTask]); // add to resolved
-    toast.success(`Completed "${completedTask.title}"👏!`);
-    // console.log(completedTask)
-  };
-
-
+const [count,setCount] = useState(0);
+const [resolved,setResolved] = useState(0);
+const [selected,setSelected] = useState([]);
+const [completed,setCompleted] = useState([]);
   return (
     <>
       <header>
         <nav className='shadow-sm'>
-            <Navbar></Navbar>
-        </nav>
-
-          <section className='bg-[#F5F5F5]'>
-          <Hero tasks={tasks} resolvedTasks={resolvedTasks}></Hero>
-          </section>
+          <Nav></Nav>
+        </nav>      
       </header>
-
-      <main className='bg-[#F5F5F5]'>
-          <MainSection resolvedTasks={resolvedTasks} tickets={tickets} onCompleteTask={onCompleteTask} tasks={tasks} onAddTask={onAddTask} ></MainSection>
-      </main>
-          <Footer></Footer>
-          
-          <ToastContainer />
-
+      <div className='fontFamily bg-[#f5f5f5]'>
+        <Status count={count} resolved={resolved}></Status>
+        <div className='flex flex-col md:flex-row gap-7 px-4 mb-20  my-7 mx-auto md:max-w-[1420px]'>
+          <Suspense fallback ={<div className='flex-2 md:flex-3 flex justify-center items-center'><span className="loading loading-ring loading-xl"></span></div>} >
+            <Issues count={count} setCount={setCount} fetchPromise={fetchPromise} selected={selected} setSelected={setSelected} completed={completed}></Issues>
+          </Suspense>
+          <Task selected={selected} setSelected={setSelected} count={count} setCount={setCount} resolved={resolved} setResolved={setResolved} completed={completed} setCompleted={setCompleted}></Task>
+        </div>
+        <Footer></Footer>
+        <ToastContainer autoClose={2000}/>
+      </div>
     </>
   )
 }
