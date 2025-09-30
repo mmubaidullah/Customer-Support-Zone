@@ -15,7 +15,7 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 library.add(fas, far, fab)
 
 const fetchdata = async () =>{
-const url = 'public/data.json';
+const url = '/data.json';
 const res = await fetch(url)
 return  res.json()
 }
